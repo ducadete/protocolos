@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressos - Saúde da Família</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="app-container" class="w-full max-w-4xl mx-auto p-4 md:p-6">
+        <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Impressos da Unidade</h1>
+                <a href="index.html" class="text-sm text-blue-600 hover:underline">Voltar para Protocolos</a>
+            </div>
+            
+            <!-- Estados de Carregamento e Erro -->
+            <div id="loading-state" class="text-center py-10">
+                <p class="text-gray-500 animate-pulse">A carregar lista de impressos...</p>
+            </div>
+            <div id="error-state" class="text-center py-10 hidden bg-red-50 p-6 rounded-lg">
+                <h3 class="font-bold text-red-700 text-lg">Erro ao Carregar os Dados</h3>
+                <p id="error-message" class="text-gray-600 mt-2">Não foi possível carregar a base de dados. Verifique a sua planilha e as permissões de partilha.</p>
+                <p class="text-sm text-gray-500 mt-2"><b>Ação necessária:</b> Siga as instruções para criar e publicar a sua Planilha Google como um ficheiro CSV.</p>
+            </div>
+
+            <!-- Conteúdo Principal (inicialmente escondido) -->
+            <div id="content-wrapper" class="hidden">
+                <div class="relative mb-6">
+                    <input type="text" id="search-input" placeholder="Pesquisar por nome do impresso..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full focus:ring-blue-500 focus:border-blue-500">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
+                </div>
+                <div id="search-results" class="space-y-3"></div>
+                <p id="no-results" class="text-center text-gray-500 mt-8 hidden">Nenhum impresso encontrado com esse nome.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- BASE DE DADOS EXTERNA (GOOGLE SHEETS) ---
+        // !!! IMPORTANTE !!! Substitua a URL abaixo pela URL da sua planilha publicada como CSV.
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9JFZQGDWUrSt-7d8JQrZ7TdWVbio5ElJk4e7EquSjMi2CPNRwh-iQMXrQrxMexfCVU_ipCMAI2q8s/pub?output=csv';
+
+        let fuse;
+        let allDocuments = [];
+
+        const ui = {
+            loadingState: document.getElementById('loading-state'),
+            errorState: document.getElementById('error-state'),
+            errorMessage: document.getElementById('error-message'),
+            contentWrapper: document.getElementById('content-wrapper'),
+            searchInput: document.getElementById('search-input'),
+            searchResults: document.getElementById('search-results'),
+            noResults: document.getElementById('no-results'),
+        };
+
+        function csvToJSON(csv) {
+            const lines = csv.replace(/\r/g, '').split('\n');
+            const result = [];
+            if (lines.length < 2) return [];
+            const headers = lines.shift().split(',').map(h => h.trim());
+            
+            const nameIndex = headers.indexOf('nome');
+            const urlIndex = headers.indexOf('url');
+
+            if (nameIndex === -1 || urlIndex === -1) {
+                throw new Error('A sua planilha precisa de ter as colunas "nome" e "url".');
+            }
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const values = line.split(',');
+                const name = values[nameIndex] ? values[nameIndex].trim().replace(/^"|"$/g, '') : '';
+                const url = values[urlIndex] ? values[urlIndex].trim().replace(/^"|"$/g, '') : '';
+                if (name && url) {
+                    result.push({ nome: name, url: url });
+                }
+            });
+            return result;
+        }
+
+        async function loadDataFromDrive() {
+            if (GOOGLE_SHEET_CSV_URL === 'URL_DA_SUA_PLANILHA_DE_IMPRESSOS_AQUI') {
+                ui.errorMessage.textContent = 'Por favor, configure o URL da sua Planilha Google no ficheiro impressos.html.';
+                ui.loadingState.classList.add('hidden');
+                ui.errorState.classList.remove('hidden');
+                return;
+            }
+
+            const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+            const finalUrl = `${PROXY_URL}${encodeURIComponent(GOOGLE_SHEET_CSV_URL)}`;
+            
+            try {
+                const response = await fetch(finalUrl);
+                if (!response.ok) throw new Error('Falha de rede ou de permissão ao aceder ao Google Drive.');
+                
+                const csvData = await response.text();
+                if (!csvData.trim() || csvData.toLowerCase().includes('google drive')) throw new Error('Os dados recebidos estão vazios. Verifique as permissões de partilha da sua planilha.');
+
+                allDocuments = csvToJSON(csvData);
+                if (allDocuments.length === 0) throw new Error('Nenhum impresso encontrado na planilha. Verifique se preencheu as colunas "nome" e "url".');
+                
+                const options = { keys: ['nome'], includeScore: true, threshold: 0.4, minMatchCharLength: 2, ignoreLocation: true };
+                fuse = new Fuse(allDocuments, options);
+                
+                displayResults(allDocuments.map(doc => ({ item: doc })));
+                
+                ui.loadingState.classList.add('hidden');
+                ui.contentWrapper.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("ERRO AO CARREGAR DADOS:", error);
+                ui.errorMessage.textContent = error.message;
+                ui.loadingState.classList.add('hidden');
+                ui.errorState.classList.remove('hidden');
+            }
+        }
+        
+        const performSearch = () => {
+            if (!fuse) return;
+            const query = ui.searchInput.value.trim();
+            const results = query ? fuse.search(query) : allDocuments.map(doc => ({ item: doc }));
+            displayResults(results);
+        };
+
+        const displayResults = (results) => {
+            ui.searchResults.innerHTML = '';
+            ui.noResults.classList.toggle('hidden', results.length === 0 && ui.searchInput.value.trim() !== '');
+
+            results.forEach(result => {
+                const doc = result.item;
+                const el = document.createElement('a');
+                el.href = doc.url;
+                el.target = '_blank';
+                el.rel = 'noopener noreferrer';
+                el.className = 'flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 cursor-pointer transition-colors duration-200';
+                
+                el.innerHTML = `
+                    <span class="font-medium text-blue-700">${doc.nome}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                `;
+                
+                ui.searchResults.appendChild(el);
+            });
+        };
+        
+        ui.searchInput.addEventListener('input', performSearch);
+        
+        loadDataFromDrive();
+    </script>
+</body>
+</html>
+
