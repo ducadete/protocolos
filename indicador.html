@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicadores de Financiamento - Saúde da Família</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Estilos para a animação do Dropdown */
+        .dropdown-enter { animation: dropdown-enter 0.2s ease-out forwards; }
+        .dropdown-leave { animation: dropdown-leave 0.2s ease-in forwards; }
+        @keyframes dropdown-enter {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes dropdown-leave {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-10px) scale(0.95); }
+        }
+        /* Melhora a aparência dos radios */
+        input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        input[type="radio"]:checked {
+            border-color: #2563eb;
+            background-color: #2563eb;
+        }
+        input[type="radio"]:checked::after {
+            content: '';
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="app-container" class="w-full max-w-4xl mx-auto p-4 md:p-6">
+        <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
+            <header class="flex justify-between items-center mb-6 pb-4 border-b">
+                <h1 class="text-2xl font-bold text-gray-800">Indicadores de Financiamento</h1>
+                
+                <!-- Menu Dropdown -->
+                <div class="relative" id="menu-container">
+                    <button id="menu-button" class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                    <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div class="py-1" role="none">
+                            <a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">HOME</a>
+                            <a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">IMPRESSOS</a>
+                            <a href="indicador.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors font-semibold text-blue-700" role="menuitem" tabindex="-1">INDICADOR</a>
+                            <a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">PROTOCOLOS</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                <form id="healthForm" class="space-y-6">
+                    <fieldset class="border border-gray-200 rounded-lg p-5">
+                        <legend class="font-semibold text-gray-800 px-2 text-lg">Qual o sexo do paciente?</legend>
+                        <div class="flex flex-col sm:flex-row sm:space-x-8 mt-4">
+                            <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer w-full">
+                                <input type="radio" name="sexo" value="masculino">
+                                <span>Masculino</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer w-full">
+                                <input type="radio" name="sexo" value="feminino">
+                                <span>Feminino</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Fluxo Masculino -->
+                    <div id="masculinoFlow" class="flow space-y-6" style="display: none;">
+                        <fieldset class="border border-gray-200 rounded-lg p-5">
+                            <legend class="font-semibold text-gray-800 px-2 text-lg">Qual a faixa etária do paciente?</legend>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaMasculino" value="0a2"> <span>0 a 2 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaMasculino" value="2a59"> <span>2 a 59 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaMasculino" value="60+"> <span>Maior que 60 anos</span></label>
+                            </div>
+                        </fieldset>
+                        
+                        <div id="comorbidadeMasculinoDiv" style="display: none;">
+                            <fieldset class="border border-gray-200 rounded-lg p-5">
+                                <legend class="font-semibold text-gray-800 px-2 text-lg">Possui alguma comorbidade?</legend>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeMasculino" value="nenhuma"> <span>Nenhuma</span></label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeMasculino" value="has"> <span>HAS</span></label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeMasculino" value="dm"> <span>DM</span></label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeMasculino" value="has_dm"> <span>HAS e DM</span></label>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <div id="masculinoChecklists" class="checklists" style="display: none;">
+                            <!-- Checklists Masculinos aqui -->
+                            <div id="masc-0a2-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 0-2 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>1ª consulta presencial (médico/enfermeiro) até o 30º dia de vida;</li><li>09 consultas (médico/enfermeiro) até 2 anos de vida;</li><li>09 registros de peso e altura até 2 anos;</li><li>02 visitas domiciliares (ACS/TACS): 1ª até 30 dias, 2ª até 6 meses;</li><li>Vacinas em dia (Difteria, Tétano, Coqueluche, Hepatite B, Hib, Pólio, Tríplice Viral).</li></ul></div>
+                            <div id="masc-0a2-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 0-2 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>1ª consulta presencial (médico/enfermeiro) até o 30º dia de vida;</li><li>09 consultas (médico/enfermeiro) até 2 anos de vida;</li><li>09 registros de peso e altura até 2 anos;</li><li>02 visitas domiciliares (ACS/TACS): 1ª até 30 dias, 2ª até 6 meses;</li><li>Vacinas em dia;</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses.</li></ul></div>
+                            <div id="masc-0a2-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 0-2 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-0a2-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 0-2 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-2a59-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 2-59 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-2a59-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 2-59 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-2a59-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 2-59 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-2a59-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 2-59 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Verificar e atualizar calendário vacinal;</li><li>Ofertar consulta odontológica;</li><li>Ofertar aferição de pressão arterial;</li><li>Ofertar peso e altura;</li><li>Manter atividades preventivas de rotina (não há indicador específico).</li></ul></div>
+                            <div id="masc-60+-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 60+ anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses;</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-60+-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 60+ anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-60+-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 60+ anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="masc-60+-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Masculino, 60+ anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Verificar e atualizar calendário vacinal;</li><li>Ofertar consulta odontológica;</li><li>Ofertar aferição de pressão arterial;</li><li>Ofertar peso e altura;</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                        </div>
+                    </div>
+
+                    <!-- Fluxo Feminino -->
+                    <div id="femininoFlow" class="flow space-y-6" style="display: none;">
+                        <fieldset class="border border-gray-200 rounded-lg p-5">
+                            <legend class="font-semibold text-gray-800 px-2 text-lg">Qual a faixa etária do paciente?</legend>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                                <!-- Opções de faixa etária feminina aqui -->
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="0a2"> <span>0 a 2 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="3a8"> <span>3 a 8 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="9a14"> <span>9 a 14 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="15a23"> <span>15 a 23 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="24a49"> <span>24 a 49 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="50a59"> <span>50 a 59 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="60a64"> <span>60 a 64 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="65a69"> <span>65 a 69 anos</span></label>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="faixaEtariaFeminino" value="70+"> <span>70+ anos</span></label>
+                            </div>
+                        </fieldset>
+
+                        <div id="comorbidadeFemininoDiv" style="display: none;">
+                             <fieldset class="border border-gray-200 rounded-lg p-5">
+                                <legend class="font-semibold text-gray-800 px-2 text-lg">Possui alguma comorbidade?</legend>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeFeminino" value="nenhuma"> <span>Nenhuma</span></label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeFeminino" value="has"> <span>HAS</span></label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeFeminino" value="dm"> <span>DM</span></label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="radio" name="comorbidadeFeminino" value="has_dm"> <span>HAS e DM</span></label>
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                        <div id="femininoChecklists" class="checklists" style="display: none;">
+                            <!-- Checklists Femininos aqui -->
+                            <div id="fem-0a2-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 0-2 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>1ª consulta presencial (médico/enfermeiro) até o 30º dia de vida;</li><li>09 consultas (médico/enfermeiro) até 2 anos de vida;</li><li>09 registros de peso e altura até 2 anos;</li><li>02 visitas domiciliares (ACS/TACS): 1ª até 30 dias, 2ª até 6 meses;</li><li>Vacinas em dia (Difteria, Tétano, Coqueluche, Hepatite B, Hib, Pólio, Tríplice Viral).</li></ul></div>
+                            <div id="fem-0a2-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 0-2 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses.</li></ul></div>
+                            <div id="fem-0a2-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 0-2 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-0a2-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 0-2 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-3a8-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 3-8 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Ações preventivas de rotina (vacinas, odonto, PA, peso/altura).</li></ul></div>
+                            <div id="fem-3a8-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 3-8 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-3a8-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 3-8 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-3a8-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 3-8 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-9a14-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 9-14 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Ações preventivas de rotina;</li><li>Registro de pelo menos 1 dose da vacina HPV;</li><li>Para 14 anos: registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-9a14-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 9-14 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS (faixa etária 3-8);</li><li>Registro de pelo menos 1 dose da vacina HPV;</li><li>Para 14 anos: registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-9a14-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 9-14 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de DM (faixa etária 3-8);</li><li>Registro de pelo menos 1 dose da vacina HPV;</li><li>Para 14 anos: registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-9a14-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 9-14 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM (faixa etária 3-8);</li><li>Registro de pelo menos 1 dose da vacina HPV;</li><li>Para 14 anos: registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-15a23-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 15-23 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Ações preventivas de rotina;</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-15a23-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 15-23 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS (faixa etária 3-8);</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-15a23-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 15-23 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de DM (faixa etária 3-8);</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-15a23-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 15-23 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM (faixa etária 3-8);</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-24a49-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 24-49 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Ações preventivas de rotina;</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses;</li><li>Registro de 1 exame de rastreamento para câncer do colo de útero (solicitado/avaliado) nos últimos 36 meses.</li></ul></div>
+                            <div id="fem-24a49-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 24-49 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS (faixa etária 3-8);</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses;</li><li>Registro de 1 exame de rastreamento para câncer do colo de útero (solicitado/avaliado) nos últimos 36 meses.</li></ul></div>
+                            <div id="fem-24a49-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 24-49 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de DM (faixa etária 3-8);</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses;</li><li>Registro de 1 exame de rastreamento para câncer do colo de útero (solicitado/avaliado) nos últimos 36 meses.</li></ul></div>
+                            <div id="fem-24a49-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 24-49 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM (faixa etária 3-8);</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses;</li><li>Registro de 1 exame de rastreamento para câncer do colo de útero (solicitado/avaliado) nos últimos 36 meses.</li></ul></div>
+                            <div id="fem-50a59-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 50-59 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades" (faixa etária 24-49);</li><li>Registro de 1 exame de rastreamento para câncer de mama (solicitado/avaliado) nos últimos 24 meses.</li></ul></div>
+                            <div id="fem-50a59-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 50-59 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS (faixa etária 24-49);</li><li>Registro de 1 exame de rastreamento para câncer de mama (solicitado/avaliado) nos últimos 24 meses.</li></ul></div>
+                            <div id="fem-50a59-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 50-59 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de DM (faixa etária 24-49);</li><li>Registro de 1 exame de rastreamento para câncer de mama (solicitado/avaliado) nos últimos 24 meses.</li></ul></div>
+                            <div id="fem-50a59-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 50-59 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM (faixa etária 24-49);</li><li>Registro de 1 exame de rastreamento para câncer de mama (solicitado/avaliado) nos últimos 24 meses.</li></ul></div>
+                            <div id="fem-60a64-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 60-64 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades" (faixa etária 50-59);</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-60a64-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 60-64 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS (faixa etária 50-59);</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-60a64-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 60-64 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de DM (faixa etária 50-59);</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-60a64-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 60-64 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM (faixa etária 50-59);</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-65a69-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 65-69 anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Ações preventivas de rotina;</li><li>Registro de atendimento sobre saúde sexual e reprodutiva nos últimos 12 meses;</li><li>Registro de 1 exame de rastreamento para câncer de mama (solicitado/avaliado) nos últimos 24 meses;</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-65a69-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 65-69 anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-65a69-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 65-69 anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-65a69-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 65-69 anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM.</li></ul></div>
+                            <div id="fem-70+-nenhuma" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 70+ anos, sem comorbidades</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Ações preventivas de rotina;</li><li>Registro de 1 dose da vacina influenza nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-70+-has" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 70+ anos, com HAS</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de "sem comorbidades";</li><li>01 consulta (presencial/remota) nos últimos 6 meses;</li><li>01 registro de aferição da pressão arterial nos últimos 6 meses;</li><li>02 visitas domiciliares (ACS/TACS) com intervalo mínimo de 30 dias, nos últimos 12 meses;</li><li>01 registro de peso e altura nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-70+-dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 70+ anos, com DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS;</li><li>01 registro de hemoglobina glicada (solicitada/avaliada) nos últimos 12 meses;</li><li>01 registro de avaliação dos pés nos últimos 12 meses.</li></ul></div>
+                            <div id="fem-70+-has_dm" class="checklist" style="display: none;"><h3 class="font-bold text-lg text-blue-800 mb-3">Checklist: Feminino, 70+ anos, com HAS e DM</h3><ul class="list-disc list-inside space-y-2 text-gray-700"><li>Todos os itens de HAS e DM.</li></ul></div>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const masculinoFlow = document.getElementById('masculinoFlow');
+            const femininoFlow = document.getElementById('femininoFlow');
+
+            const sexoRadios = document.querySelectorAll('input[name="sexo"]');
+            const faixaEtariaMasculinoRadios = document.querySelectorAll('input[name="faixaEtariaMasculino"]');
+            const comorbidadeMasculinoRadios = document.querySelectorAll('input[name="comorbidadeMasculino"]');
+            const comorbidadeMasculinoDiv = document.getElementById('comorbidadeMasculinoDiv');
+            const checklistsMasculino = document.getElementById('masculinoChecklists');
+            
+            const faixaEtariaFemininoRadios = document.querySelectorAll('input[name="faixaEtariaFeminino"]');
+            const comorbidadeFemininoRadios = document.querySelectorAll('input[name="comorbidadeFeminino"]');
+            const comorbidadeFemininoDiv = document.getElementById('comorbidadeFemininoDiv');
+            const checklistsFeminino = document.getElementById('femininoChecklists');
+
+            function hideAllChecklists() {
+                document.querySelectorAll('.checklist').forEach(el => {
+                    el.style.display = 'none';
+                    // Adiciona uma classe para animação de fade-in
+                    el.classList.add('bg-blue-50', 'p-6', 'rounded-lg', 'border', 'border-blue-200');
+                });
+            }
+
+            function showCorrectChecklist(sexo, faixaEtaria, comorbidade) {
+                hideAllChecklists();
+                const checklistId = `${sexo}-${faixaEtaria}-${comorbidade}`;
+                const checklist = document.getElementById(checklistId);
+                if (checklist) {
+                    checklist.style.display = 'block';
+                }
+            }
+            
+            sexoRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    // Reseta tudo ao trocar de sexo
+                    masculinoFlow.style.display = 'none';
+                    femininoFlow.style.display = 'none';
+                    comorbidadeMasculinoDiv.style.display = 'none';
+                    checklistsMasculino.style.display = 'none';
+                    comorbidadeFemininoDiv.style.display = 'none';
+                    checklistsFeminino.style.display = 'none';
+                    document.querySelectorAll('input[type="radio"]').forEach(r => {
+                        if (r.name !== 'sexo') r.checked = false;
+                    });
+                    hideAllChecklists();
+
+                    if (e.target.value === 'masculino') {
+                        masculinoFlow.style.display = 'block';
+                    } else {
+                        femininoFlow.style.display = 'block';
+                    }
+                });
+            });
+
+            faixaEtariaMasculinoRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const idade = e.target.value;
+                    checklistsMasculino.style.display = 'block';
+                    comorbidadeMasculinoDiv.style.display = 'block';
+                    
+                    comorbidadeMasculinoRadios.forEach(r => r.checked = false);
+                    document.querySelector('input[name="comorbidadeMasculino"][value="nenhuma"]').checked = true; // Default para "nenhuma"
+                    
+                    showCorrectChecklist('masc', idade, 'nenhuma');
+                });
+            });
+
+            comorbidadeMasculinoRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const comorbidade = e.target.value;
+                    const idade = document.querySelector('input[name="faixaEtariaMasculino"]:checked')?.value;
+                    if (idade) {
+                        showCorrectChecklist('masc', idade, comorbidade);
+                    }
+                });
+            });
+            
+            faixaEtariaFemininoRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const idade = e.target.value;
+                    checklistsFeminino.style.display = 'block';
+                    comorbidadeFemininoDiv.style.display = 'block';
+                    
+                    comorbidadeFemininoRadios.forEach(r => r.checked = false);
+                     document.querySelector('input[name="comorbidadeFeminino"][value="nenhuma"]').checked = true; // Default para "nenhuma"
+
+                    showCorrectChecklist('fem', idade, 'nenhuma');
+                });
+            });
+
+            comorbidadeFemininoRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const comorbidade = e.target.value;
+                    const idade = document.querySelector('input[name="faixaEtariaFeminino"]:checked')?.value;
+                    if (idade) {
+                        showCorrectChecklist('fem', idade, comorbidade);
+                    }
+                });
+            });
+
+            // Lógica do Menu
+            const menuButton = document.getElementById('menu-button');
+            const menuDropdown = document.getElementById('menu-dropdown');
+            const menuContainer = document.getElementById('menu-container');
+
+            menuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const isHidden = menuDropdown.classList.contains('hidden');
+                
+                if (isHidden) {
+                    menuDropdown.classList.remove('hidden', 'dropdown-leave');
+                    menuDropdown.classList.add('dropdown-enter');
+                } else {
+                    menuDropdown.classList.remove('dropdown-enter');
+                    menuDropdown.classList.add('dropdown-leave');
+                    setTimeout(() => menuDropdown.classList.add('hidden'), 200);
+                }
+            });
+
+            window.addEventListener('click', (event) => {
+                if (!menuContainer.contains(event.target) && !menuDropdown.classList.contains('hidden')) {
+                    menuDropdown.classList.remove('dropdown-enter');
+                    menuDropdown.classList.add('dropdown-leave');
+                    setTimeout(() => menuDropdown.classList.add('hidden'), 200);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
