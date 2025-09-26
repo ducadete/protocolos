@@ -15,6 +15,18 @@
         .modal-leave { animation: modal-leave 0.3s ease-in forwards; }
         @keyframes modal-enter { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         @keyframes modal-leave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
+
+        /* Estilos para a animação do Dropdown */
+        .dropdown-enter { animation: dropdown-enter 0.2s ease-out forwards; }
+        .dropdown-leave { animation: dropdown-leave 0.2s ease-in forwards; }
+        @keyframes dropdown-enter {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes dropdown-leave {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-10px) scale(0.95); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -23,9 +35,25 @@
         <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-800">Protocolos da Saúde da Família</h1>
-            </div>
+                
+                <div class="relative" id="menu-container">
+                    <button id="menu-button" class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+
+                    <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div class="py-1" role="none">
+                            <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">HOME</a>
+                            <a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">IMPRESSOS</a>
+                            <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">INDICADOR</a>
+                            <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">PROTOCOLOS</a>
+                        </div>
+                    </div>
+                </div>
+                </div>
             
-            <!-- Estados de Carregamento e Erro -->
             <div id="loading-state" class="text-center py-10">
                 <p class="text-gray-500 animate-pulse">A carregar protocolos...</p>
             </div>
@@ -35,7 +63,6 @@
                 <p class="text-sm text-gray-500 mt-2"><b>Ação necessária:</b> Por favor, verifique a sua folha de cálculo no Google Drive e as permissões de partilha.</p>
             </div>
 
-            <!-- Conteúdo Principal (inicialmente escondido) -->
             <div id="content-wrapper" class="hidden">
                 <div class="relative">
                     <input type="text" id="search-input" placeholder="Pesquisar por nome, tema, CID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full">
@@ -47,7 +74,6 @@
         </div>
     </div>
 
-    <!-- Modal Detalhes do Protocolo -->
     <div id="protocol-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-60 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 modal-content">
             <div class="flex justify-between items-start"><h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h3><button id="close-protocol-modal" class="text-gray-400 hover:text-gray-600">&times;</button></div>
@@ -220,13 +246,13 @@
             ui.modalAttachments.innerHTML = '';
             if (Array.isArray(protocol.anexos) && protocol.anexos.length > 0) {
                  protocol.anexos.forEach(anexo => {
-                    const link = document.createElement('a');
-                    link.href = anexo.url;
-                    link.target = '_blank';
-                    link.className = 'flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 p-2 rounded-md';
-                    link.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span>${anexo.nome}</span>`;
-                    ui.modalAttachments.appendChild(link);
-                });
+                     const link = document.createElement('a');
+                     link.href = anexo.url;
+                     link.target = '_blank';
+                     link.className = 'flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 p-2 rounded-md';
+                     link.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span>${anexo.nome}</span>`;
+                     ui.modalAttachments.appendChild(link);
+                 });
             } else { ui.modalAttachments.innerHTML = '<p class="text-gray-500">Nenhum anexo disponível.</p>'; }
 
             openModal(ui.protocolModal);
@@ -242,7 +268,41 @@
         ui.closeProtocolModalBtn.addEventListener('click', () => closeModal(ui.protocolModal));
         
         loadDataFromDrive();
+
+        // --- NOVO: LÓGICA DO MENU DROPDOWN ---
+        const menuButton = document.getElementById('menu-button');
+        const menuDropdown = document.getElementById('menu-dropdown');
+        const menuContainer = document.getElementById('menu-container');
+
+        menuButton.addEventListener('click', (event) => {
+            event.stopPropagation(); // Impede que o clique se propague para o window e feche o menu
+            const isHidden = menuDropdown.classList.contains('hidden');
+            
+            if (isHidden) {
+                menuDropdown.classList.remove('hidden', 'dropdown-leave');
+                menuDropdown.classList.add('dropdown-enter');
+            } else {
+                menuDropdown.classList.remove('dropdown-enter');
+                menuDropdown.classList.add('dropdown-leave');
+                setTimeout(() => {
+                    menuDropdown.classList.add('hidden');
+                }, 200); // Duração da animação
+            }
+        });
+
+        // Fecha o menu se o usuário clicar fora dele
+        window.addEventListener('click', (event) => {
+            if (!menuContainer.contains(event.target)) { // Verifica se o clique foi fora do container do menu
+                if (!menuDropdown.classList.contains('hidden')) {
+                    menuDropdown.classList.remove('dropdown-enter');
+                    menuDropdown.classList.add('dropdown-leave');
+                    setTimeout(() => {
+                        menuDropdown.classList.add('hidden');
+                    }, 200);
+                }
+            }
+        });
+
     </script>
 </body>
 </html>
-
