@@ -64,7 +64,6 @@
     </div>
 
     <script>
-        // URL da sua planilha publicada no formato CSV.
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuAHObn8UfEBDmR0f_eqdH_5O-3gq-WhnW9AnqWgJWHsUi1_72_tDGPktpb4TR4puBE0r99F2nvLeE/pub?output=csv';
 
         let fuse;
@@ -88,47 +87,56 @@
             closeProtocolModalBtn: document.getElementById('close-protocol-modal'),
         };
 
-        // Função para converter o texto CSV da planilha em um formato que o código entende (JSON).
+        /**
+         * *** FUNÇÃO ATUALIZADA ***
+         * Converte CSV para JSON de forma mais robusta, lidando com
+         * vírgulas e aspas dentro dos campos.
+         */
         function csvToJSON(csv) {
             const lines = csv.replace(/\r/g, '').split('\n');
             const result = [];
             if (lines.length < 2) return [];
+            
             const headers = lines.shift().split(',').map(h => h.trim());
 
             lines.forEach(line => {
                 if (!line.trim()) return;
-                const obj = {};
-                let inQuotes = false;
-                let current = '';
-                let colIndex = 0;
 
+                const values = [];
+                let current = '';
+                let inQuotes = false;
                 for (let i = 0; i < line.length; i++) {
                     const char = line[i];
-                    if (char === '"' && (i === 0 || line[i-1] !== '\\')) {
+                    if (char === '"') {
                         inQuotes = !inQuotes;
                     } else if (char === ',' && !inQuotes) {
-                        const header = headers[colIndex];
-                        obj[header] = current.trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                        values.push(current);
                         current = '';
-                        colIndex++;
                     } else {
                         current += char;
                     }
                 }
-                const lastHeader = headers[colIndex];
-                obj[lastHeader] = current.trim().replace(/^"|"$/g, '').replace(/""/g, '"');
-                result.push(obj);
+                values.push(current); // Adiciona a última coluna
+
+                if (values.length === headers.length) {
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                        // Limpa as aspas do início e do fim, se existirem
+                        obj[header] = values[i].trim().replace(/^"|"$/g, '');
+                    });
+                    result.push(obj);
+                }
             });
             return result;
         }
+
 
         async function loadDataFromDrive() {
             ui.loadingState.classList.remove('hidden');
             ui.errorState.classList.add('hidden');
             ui.contentWrapper.classList.add('hidden');
             
-            // Usamos um proxy para evitar o erro de CORS quando o arquivo é aberto localmente.
-            const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+            const PROXY_URL = 'https://corsproxy.io/?'; // Usando um proxy mais estável
             const finalUrl = `${PROXY_URL}${encodeURIComponent(GOOGLE_SHEET_CSV_URL)}`;
             
             try {
