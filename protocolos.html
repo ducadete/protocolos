@@ -9,24 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .modal { display: none; }
-        .modal.is-open { display: flex; }
+        .modal { display: none; } .modal.is-open { display: flex; }
         .modal-enter { animation: modal-enter 0.3s ease-out forwards; }
         .modal-leave { animation: modal-leave 0.3s ease-in forwards; }
         @keyframes modal-enter { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         @keyframes modal-leave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
-
-        /* Estilos para a animação do Dropdown */
         .dropdown-enter { animation: dropdown-enter 0.2s ease-out forwards; }
         .dropdown-leave { animation: dropdown-leave 0.2s ease-in forwards; }
-        @keyframes dropdown-enter {
-            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes dropdown-leave {
-            from { opacity: 1; transform: translateY(0) scale(1); }
-            to { opacity: 0; transform: translateY(-10px) scale(0.95); }
-        }
+        @keyframes dropdown-enter { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes dropdown-leave { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -35,60 +26,45 @@
         <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-800">Protocolos da Saúde da Família</h1>
-                
-                <div class="relative" id="menu-container">
+                 <div class="relative" id="menu-container">
                     <button id="menu-button" class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                     </button>
-
-                    <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
-                        <div class="py-1" role="none">
-                            <a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">HOME</a>
-                            <a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">IMPRESSOS</a>
-                            <a href="indicador.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">INDICADOR</a>
-                            <a href="protocolos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors" role="menuitem" tabindex="-1">PROTOCOLOS</a>
-                        </div>
+                    <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                        <div class="py-1"><a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">HOME</a><a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">IMPRESSOS</a><a href="indicador.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">INDICADOR</a><a href="protocolos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">PROTOCOLOS</a></div>
                     </div>
                 </div>
-                </div>
-            
-            <div id="loading-state" class="text-center py-10">
-                <p class="text-gray-500 animate-pulse">A carregar protocolos...</p>
             </div>
+            
+            <div id="loading-state" class="text-center py-10"><p class="text-gray-500 animate-pulse">A carregar protocolos...</p></div>
             <div id="error-state" class="text-center py-10 hidden bg-red-50 p-6 rounded-lg">
                 <h3 class="font-bold text-red-700 text-lg">Erro ao Carregar os Dados</h3>
                 <p id="error-message" class="text-gray-600 mt-2">Não foi possível carregar a base de dados do Google Drive.</p>
-                <p class="text-sm text-gray-500 mt-2"><b>Ação necessária:</b> Por favor, verifique a sua folha de cálculo no Google Drive e as permissões de partilha.</p>
+                <p class="text-sm text-gray-500 mt-2"><b>Ação:</b> Verifique sua conexão ou se a planilha está publicada corretamente.</p>
             </div>
 
             <div id="content-wrapper" class="hidden">
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Pesquisar por nome, tema, CID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
-                </div>
-                <div id="search-results" class="mt-6 space-y-3"></div>
-                <p id="no-results" class="text-center text-gray-500 mt-8 hidden">Nenhum protocolo encontrado.</p>
+                <div class="relative"><input type="text" id="search-input" placeholder="Pesquisar por nome, tema, CID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full"><svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg></div>
+                <div id="search-results" class="mt-6 space-y-3"></div><p id="no-results" class="text-center text-gray-500 mt-8 hidden">Nenhum protocolo encontrado.</p>
             </div>
         </div>
     </div>
 
     <div id="protocol-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-60 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 modal-content">
-            <div class="flex justify-between items-start"><h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h3><button id="close-protocol-modal" class="text-gray-400 hover:text-gray-600">&times;</button></div>
+            <div class="flex justify-between items-start"><h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h3><button id="close-protocol-modal" class="text-gray-400 hover:text-gray-600 text-3xl font-bold">&times;</button></div>
             <div class="space-y-5 text-gray-700">
                 <div><h4 class="font-semibold border-b pb-2 mb-2">Resumo</h4><p id="modal-summary"></p></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Pontos Principais</h4><ul id="modal-main-points" class="list-disc list-inside"></ul></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Fluxo do Protocolo</h4><ul id="modal-flow" class="list-decimal list-inside space-y-2 text-sm"></ul></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Faixa Etária e CIDs</h4><p><span class="font-medium">Idades:</span> <span id="modal-ages"></span></p><p><span class="font-medium">CIDs:</span> <span id="modal-cids"></span></p></div>
+                <div><h4 class="font-semibold border-b pb-2 mb-2">Pontos Principais</h4><ul id="modal-main-points" class="list-disc list-inside space-y-1"></ul></div>
+                <div><h4 class="font-semibold border-b pb-2 mb-2">Fluxo do Protocolo</h4><ul id="modal-flow" class="list-decimal list-inside space-y-2"></ul></div>
+                <div><h4 class="font-semibold border-b pb-2 mb-2">Faixa Etária e Doenças/CIDs</h4><p><span class="font-medium">Idades:</span> <span id="modal-ages"></span></p><p><span class="font-medium">Doenças/CIDs:</span> <span id="modal-cids"></span></p></div>
                 <div><h4 class="font-semibold border-b pb-2 mb-2">Anexos</h4><div id="modal-attachments" class="space-y-2"></div></div>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        // --- BASE DE DADOS EXTERNA (GOOGLE DRIVE) ---
+    <script>
+        // URL da sua planilha publicada no formato CSV.
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuAHObn8UfEBDmR0f_eqdH_5O-3gq-WhnW9AnqWgJWHsUi1_72_tDGPktpb4TR4puBE0r99F2nvLeE/pub?output=csv';
 
         let fuse;
@@ -112,64 +88,37 @@
             closeProtocolModalBtn: document.getElementById('close-protocol-modal'),
         };
 
+        // Função para converter o texto CSV da planilha em um formato que o código entende (JSON).
         function csvToJSON(csv) {
-            console.log("--- INICIANDO ANÁLISE DO CSV ---");
             const lines = csv.replace(/\r/g, '').split('\n');
             const result = [];
-            if (lines.length < 2) {
-                console.error("Ficheiro CSV vazio ou sem cabeçalhos.");
-                return [];
-            }
+            if (lines.length < 2) return [];
             const headers = lines.shift().split(',').map(h => h.trim());
-            console.log("Cabeçalhos (Colunas) encontrados:", headers);
 
-            lines.forEach((line, lineIndex) => {
+            lines.forEach(line => {
                 if (!line.trim()) return;
-
-                const values = [];
-                let current = '';
+                const obj = {};
                 let inQuotes = false;
+                let current = '';
+                let colIndex = 0;
 
                 for (let i = 0; i < line.length; i++) {
                     const char = line[i];
-
-                    if (char === '"') {
-                        if (inQuotes && line[i + 1] === '"') {
-                            current += '"';
-                            i++; // Pula a próxima aspa (escaped quote)
-                        } else {
-                            inQuotes = !inQuotes;
-                        }
+                    if (char === '"' && (i === 0 || line[i-1] !== '\\')) {
+                        inQuotes = !inQuotes;
                     } else if (char === ',' && !inQuotes) {
-                        values.push(current);
+                        const header = headers[colIndex];
+                        obj[header] = current.trim().replace(/^"|"$/g, '').replace(/""/g, '"');
                         current = '';
+                        colIndex++;
                     } else {
                         current += char;
                     }
                 }
-                values.push(current);
-
-                if (values.length === headers.length) {
-                    const obj = {};
-                    headers.forEach((header, i) => {
-                        let value = values[i];
-                        try {
-                            if (['principais', 'fluxo', 'anexos'].includes(header) && value.startsWith('[')) {
-                                obj[header] = JSON.parse(value);
-                            } else {
-                                obj[header] = value;
-                            }
-                        } catch (e) {
-                            console.error(`ERRO DE JSON na linha ${lineIndex + 2}, coluna "${header}"`);
-                            obj[header] = [];
-                        }
-                    });
-                    result.push(obj);
-                } else {
-                    console.error(`ERRO DE ANÁLISE na linha ${lineIndex + 2}: O número de colunas (${values.length}) não corresponde ao cabeçalho (${headers.length}).`);
-                }
+                const lastHeader = headers[colIndex];
+                obj[lastHeader] = current.trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                result.push(obj);
             });
-            console.log("--- ANÁLISE DO CSV CONCLUÍDA ---");
             return result;
         }
 
@@ -178,28 +127,21 @@
             ui.errorState.classList.add('hidden');
             ui.contentWrapper.classList.add('hidden');
             
-            // CORREÇÃO: Usando um proxy CORS para garantir a comunicação
+            // Usamos um proxy para evitar o erro de CORS quando o arquivo é aberto localmente.
             const PROXY_URL = 'https://api.allorigins.win/raw?url=';
             const finalUrl = `${PROXY_URL}${encodeURIComponent(GOOGLE_SHEET_CSV_URL)}`;
             
             try {
                 const response = await fetch(finalUrl);
-                if (!response.ok) {
-                    throw new Error('Falha de rede ou de permissão ao aceder ao Google Drive através do proxy.');
-                }
-                const csvData = await response.text();
+                if (!response.ok) throw new Error('Falha de rede ou o serviço de proxy está offline.');
                 
-                if (csvData.trim() === '' || csvData.toLowerCase().includes('google drive')) {
-                    throw new Error('Os dados recebidos estão vazios ou são uma página de erro. Verifique as permissões de publicação no Google Drive.');
-                }
+                const csvData = await response.text();
+                if (!csvData || csvData.toLowerCase().includes('google drive')) throw new Error('Dados recebidos estão vazios. Verifique o link de publicação.');
 
                 const databaseDeProtocolos = csvToJSON(csvData);
-                
-                if (databaseDeProtocolos.length === 0) {
-                    throw new Error('A base de dados foi carregada, mas nenhum protocolo foi interpretado. Verifique a formatação da sua folha de cálculo e os erros no console (F12).');
-                }
+                if (databaseDeProtocolos.length === 0) throw new Error('A planilha foi carregada, mas nenhum protocolo foi encontrado. Verifique a formatação.');
 
-                const options = { keys: ['nome', 'tema', 'resumo', 'cids', 'descricao'], includeScore: true, threshold: 0.3, minMatchCharLength: 2, ignoreLocation: true };
+                const options = { keys: ['nome', 'tema', 'resumo', 'cids', 'doencas'], threshold: 0.3 };
                 fuse = new Fuse(databaseDeProtocolos, options);
                 displayResults(databaseDeProtocolos.map(p => ({ item: p })));
                 
@@ -227,7 +169,7 @@
             results.forEach(result => {
                 const protocol = result.item;
                 const el = document.createElement('div');
-                el.className = 'p-4 border rounded-lg hover:bg-gray-50 cursor-pointer';
+                el.className = 'p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors';
                 el.innerHTML = `<h3 class="font-semibold text-blue-700">${protocol.nome}</h3><p class="text-sm text-gray-600 mt-1">${(protocol.resumo || '').substring(0, 120)}...</p>`;
                 el.addEventListener('click', () => showProtocolDetails(protocol));
                 ui.searchResults.appendChild(el);
@@ -238,22 +180,33 @@
             ui.modalTitle.textContent = protocol.nome || 'S/ Título';
             ui.modalSummary.textContent = protocol.resumo || 'N/A';
             ui.modalAges.textContent = protocol.idades || 'N/A';
-            ui.modalCids.textContent = protocol.cids || 'N/A';
             
-            ui.modalMainPoints.innerHTML = (Array.isArray(protocol.principais) && protocol.principais.length > 0) ? protocol.principais.map(p => `<li>${p}</li>`).join('') : '<li>Nenhum ponto principal listado.</li>';
-            ui.modalFlow.innerHTML = (Array.isArray(protocol.fluxo) && protocol.fluxo.length > 0) ? protocol.fluxo.map(p => `<li>${p}</li>`).join('') : '<li>Nenhum fluxo detalhado disponível.</li>';
+            const cidsList = protocol.cids ? protocol.cids.split(';').map(c => c.trim()) : [];
+            const doencasList = protocol.doencas ? protocol.doencas.split(';').map(d => d.trim()) : [];
+            ui.modalCids.innerHTML = cidsList.map((cid, index) => `<b>${doencasList[index] || ''}</b> (${cid})`).join(', ') || 'N/A';
+            
+            const createList = (text) => text ? text.split(';').map(item => `<li>${item.trim()}</li>`).join('') : '<li>Nenhum item.</li>';
+            ui.modalMainPoints.innerHTML = createList(protocol.principais);
+            ui.modalFlow.innerHTML = createList(protocol.fluxo);
             
             ui.modalAttachments.innerHTML = '';
-            if (Array.isArray(protocol.anexos) && protocol.anexos.length > 0) {
-                 protocol.anexos.forEach(anexo => {
-                     const link = document.createElement('a');
-                     link.href = anexo.url;
-                     link.target = '_blank';
-                     link.className = 'flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 p-2 rounded-md';
-                     link.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span>${anexo.nome}</span>`;
-                     ui.modalAttachments.appendChild(link);
+            if (protocol.anexos) {
+                 protocol.anexos.split(';').forEach(anexoStr => {
+                     const parts = anexoStr.split('|');
+                     if(parts.length === 2 && parts[0].trim() && parts[1].trim()) {
+                         const [nome, url] = parts;
+                         const link = document.createElement('a');
+                         link.href = url.trim();
+                         link.target = '_blank';
+                         link.className = 'flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 p-2 rounded-md transition-colors';
+                         link.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span>${nome.trim()}</span>`;
+                         ui.modalAttachments.appendChild(link);
+                     }
                  });
-            } else { ui.modalAttachments.innerHTML = '<p class="text-gray-500">Nenhum anexo disponível.</p>'; }
+            }
+             if (!ui.modalAttachments.hasChildNodes()) {
+                ui.modalAttachments.innerHTML = '<p class="text-gray-500">Nenhum anexo disponível.</p>';
+            }
 
             openModal(ui.protocolModal);
         };
@@ -269,42 +222,16 @@
         
         loadDataFromDrive();
 
-        // --- NOVO: LÓGICA DO MENU DROPDOWN ---
         const menuButton = document.getElementById('menu-button');
         const menuDropdown = document.getElementById('menu-dropdown');
-        const menuContainer = document.getElementById('menu-container');
-
         menuButton.addEventListener('click', (event) => {
-            event.stopPropagation(); // Impede que o clique se propague para o window e feche o menu
-            const isHidden = menuDropdown.classList.contains('hidden');
-            
-            if (isHidden) {
-                menuDropdown.classList.remove('hidden', 'dropdown-leave');
-                menuDropdown.classList.add('dropdown-enter');
-            } else {
-                menuDropdown.classList.remove('dropdown-enter');
-                menuDropdown.classList.add('dropdown-leave');
-                setTimeout(() => {
-                    menuDropdown.classList.add('hidden');
-                }, 200); // Duração da animação
-            }
+            event.stopPropagation();
+            menuDropdown.classList.toggle('hidden');
         });
-
-        // Fecha o menu se o usuário clicar fora dele
-        window.addEventListener('click', (event) => {
-            if (!menuContainer.contains(event.target)) { // Verifica se o clique foi fora do container do menu
-                if (!menuDropdown.classList.contains('hidden')) {
-                    menuDropdown.classList.remove('dropdown-enter');
-                    menuDropdown.classList.add('dropdown-leave');
-                    setTimeout(() => {
-                        menuDropdown.classList.add('hidden');
-                    }, 200);
-                }
-            }
+        window.addEventListener('click', (e) => {
+            if (!menuButton.contains(e.target)) menuDropdown.classList.add('hidden');
         });
 
     </script>
 </body>
 </html>
-
-
