@@ -17,20 +17,24 @@
         <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-800">Impressos da Unidade</h1>
-                <a href="index.html" class="text-sm text-blue-600 hover:underline">Voltar para Protocolos</a>
+                <div class="relative" id="menu-container">
+                    <button id="menu-button" class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                    </button>
+                    <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                        <div class="py-1"><a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">HOME</a><a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">IMPRESSOS</a><a href="indicador.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">INDICADOR</a><a href="protocolos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">PROTOCOLOS</a></div>
+                    </div>
+                </div>
             </div>
             
-            <!-- Estados de Carregamento e Erro -->
             <div id="loading-state" class="text-center py-10">
                 <p class="text-gray-500 animate-pulse">A carregar lista de impressos...</p>
             </div>
             <div id="error-state" class="text-center py-10 hidden bg-red-50 p-6 rounded-lg">
                 <h3 class="font-bold text-red-700 text-lg">Erro ao Carregar os Dados</h3>
                 <p id="error-message" class="text-gray-600 mt-2">Não foi possível carregar a base de dados. Verifique a sua planilha e as permissões de partilha.</p>
-                <p class="text-sm text-gray-500 mt-2"><b>Ação necessária:</b> Siga as instruções para criar e publicar a sua Planilha Google como um ficheiro CSV.</p>
             </div>
 
-            <!-- Conteúdo Principal (inicialmente escondido) -->
             <div id="content-wrapper" class="hidden">
                 <div class="relative mb-6">
                     <input type="text" id="search-input" placeholder="Pesquisar por nome do impresso..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full focus:ring-blue-500 focus:border-blue-500">
@@ -42,9 +46,8 @@
         </div>
     </div>
 
-    <script type="module">
-        // --- BASE DE DADOS EXTERNA (GOOGLE SHEETS) ---
-        // !!! IMPORTANTE !!! Substitua a URL abaixo pela URL da sua planilha publicada como CSV.
+    <script>
+        // URL da sua planilha de impressos publicada como CSV
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9JFZQGDWUrSt-7d8JQrZ7TdWVbio5ElJk4e7EquSjMi2CPNRwh-iQMXrQrxMexfCVU_ipCMAI2q8s/pub?output=csv';
 
         let fuse;
@@ -70,7 +73,7 @@
             const urlIndex = headers.indexOf('url');
 
             if (nameIndex === -1 || urlIndex === -1) {
-                throw new Error('A sua planilha precisa de ter as colunas "nome" e "url".');
+                throw new Error('A sua planilha precisa ter as colunas "nome" e "url".');
             }
 
             lines.forEach(line => {
@@ -86,14 +89,8 @@
         }
 
         async function loadDataFromDrive() {
-            if (GOOGLE_SHEET_CSV_URL === 'URL_DA_SUA_PLANILHA_DE_IMPRESSOS_AQUI') {
-                ui.errorMessage.textContent = 'Por favor, configure o URL da sua Planilha Google no ficheiro impressos.html.';
-                ui.loadingState.classList.add('hidden');
-                ui.errorState.classList.remove('hidden');
-                return;
-            }
-
-            const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+            // *** MUDANÇA AQUI: Trocamos o proxy para um diferente ***
+            const PROXY_URL = 'https://corsproxy.io/?';
             const finalUrl = `${PROXY_URL}${encodeURIComponent(GOOGLE_SHEET_CSV_URL)}`;
             
             try {
@@ -106,7 +103,7 @@
                 allDocuments = csvToJSON(csvData);
                 if (allDocuments.length === 0) throw new Error('Nenhum impresso encontrado na planilha. Verifique se preencheu as colunas "nome" e "url".');
                 
-                const options = { keys: ['nome'], includeScore: true, threshold: 0.4, minMatchCharLength: 2, ignoreLocation: true };
+                const options = { keys: ['nome'], threshold: 0.4 };
                 fuse = new Fuse(allDocuments, options);
                 
                 displayResults(allDocuments.map(doc => ({ item: doc })));
@@ -153,9 +150,19 @@
         };
         
         ui.searchInput.addEventListener('input', performSearch);
+
+        // --- Lógica do Menu Dropdown ---
+        const menuButton = document.getElementById('menu-button');
+        const menuDropdown = document.getElementById('menu-dropdown');
+        menuButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            menuDropdown.classList.toggle('hidden');
+        });
+        window.addEventListener('click', (e) => {
+            if (!menuButton.contains(e.target)) menuDropdown.classList.add('hidden');
+        });
         
         loadDataFromDrive();
     </script>
 </body>
 </html>
-
