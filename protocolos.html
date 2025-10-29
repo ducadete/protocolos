@@ -1,282 +1,550 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocolo de Bolso - Saúde da Família</title>
-    
-    <!-- Tailwind e Fuse.js -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- SDKs do Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .modal { display: none; } 
-        .modal.is-open { display: flex; }
-        .modal-enter { animation: modal-enter 0.3s ease-out forwards; }
-        .modal-leave { animation: modal-leave 0.3s ease-in forwards; }
-        @keyframes modal-enter { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes modal-leave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
-        .dropdown-enter { animation: dropdown-enter 0.2s ease-out forwards; }
-        .dropdown-leave { animation: dropdown-leave 0.2s ease-in forwards; }
-        @keyframes dropdown-enter { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes dropdown-leave { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Protocolo de Bolso - Saúde da Família</title>
+
+  <!-- Tailwind e Fuse.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- SDKs do Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .modal { display: none; }
+    .modal.is-open { display: flex; }
+    .modal-enter { animation: modal-enter 0.3s ease-out forwards; }
+    .modal-leave { animation: modal-leave 0.3s ease-in forwards; }
+    @keyframes modal-enter { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    @keyframes modal-leave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
+    .dropdown-enter { animation: dropdown-enter 0.2s ease-out forwards; }
+    .dropdown-leave { animation: dropdown-leave 0.2s ease-in forwards; }
+    @keyframes dropdown-enter { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes dropdown-leave { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+    mark { background: #fff3a3; padding: 0 .2rem; border-radius: .2rem; }
+  </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-    <div id="app-container" class="w-full max-w-4xl mx-auto p-4 md:p-6">
-        <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
-            
-            <!-- HEADER E MENU -->
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Protocolos da Saúde da Família</h1>
-                 <div class="relative" id="menu-container">
-                     <button id="menu-button" class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                     </button>
-                     <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
-                         <!-- Links do Menu -->
-                         <div class="py-1">
-                             <a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">HOME</a>
-                             <a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">IMPRESSOS</a>
-                             <a href="indicador.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">INDICADOR</a>
-                             <a href="protocolos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">PROTOCOLOS</a>
-                         </div>
-                     </div>
-                 </div>
-            </div>
-            
-            <!-- ESTADOS DE CARREGAMENTO -->
-            <div id="loading-state" class="text-center py-10"><p class="text-gray-500 animate-pulse">A carregar protocolos do Firebase...</p></div>
-            
-            <div id="error-state" class="text-center py-10 hidden bg-red-50 p-6 rounded-lg">
-                <h3 class="font-bold text-red-700 text-lg">Erro ao Carregar os Dados</h3>
-                <p id="error-message" class="text-gray-600 mt-2">Não foi possível carregar a base de dados do Firestore.</p>
-                <p class="text-sm text-gray-500 mt-2"><b>Ação:</b> Verifique sua conexão e as regras de segurança do Firestore.</p>
-            </div>
+  <div id="app-container" class="w-full max-w-4xl mx-auto p-4 md:p-6">
+    <div id="main-screen" class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full">
 
-            <!-- CONTEÚDO PRINCIPAL (BUSCA E RESULTADOS) -->
-            <div id="content-wrapper" class="hidden">
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Pesquisar por nome, tema, CID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
-                </div>
-                <div id="search-results" class="mt-6 space-y-3"></div>
-                <p id="no-results" class="text-center text-gray-500 mt-8 hidden">Nenhum protocolo encontrado.</p>
+      <!-- HEADER E MENU -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Protocolos da Saúde da Família</h1>
+        <div class="relative" id="menu-container">
+          <button id="menu-button" class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+          </button>
+          <div id="menu-dropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+            <div class="py-1">
+              <a href="index.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">HOME</a>
+              <a href="impressos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">IMPRESSOS</a>
+              <a href="indicador.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">INDICADOR</a>
+              <a href="protocolos.html" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">PROTOCOLOS</a>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- MODAL (Exatamente como o original) -->
-    <div id="protocol-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-60 items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 modal-content">
-            <div class="flex justify-between items-start">
-                <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h3>
-                <button id="close-protocol-modal" class="text-gray-400 hover:text-gray-600 text-3xl font-bold">&times;</button>
-            </div>
-            <div class="space-y-5 text-gray-700">
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Resumo</h4><p id="modal-summary"></p></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Pontos Principais</h4><ul id="modal-main-points" class="list-disc list-inside space-y-1"></ul></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Fluxo do Protocolo</h4><ul id="modal-flow" class="list-decimal list-inside space-y-2"></ul></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Faixa Etária e Doenças/CIDs</h4><p><span class="font-medium">Idades:</span> <span id="modal-ages"></span></p><p><span class="font-medium">Doenças/CIDs:</span> <span id="modal-cids"></span></p></div>
-                <div><h4 class="font-semibold border-b pb-2 mb-2">Anexos</h4><div id="modal-attachments" class="space-y-2"></div></div>
-            </div>
+      <!-- ESTADOS DE CARREGAMENTO -->
+      <div id="loading-state" class="text-center py-10">
+        <p class="text-gray-500 animate-pulse">A carregar protocolos do Firebase...</p>
+      </div>
+
+      <div id="error-state" class="text-center py-10 hidden bg-red-50 p-6 rounded-lg">
+        <h3 class="font-bold text-red-700 text-lg">Erro ao Carregar os Dados</h3>
+        <p id="error-message" class="text-gray-600 mt-2">Não foi possível carregar a base de dados do Firestore.</p>
+        <p class="text-sm text-gray-500 mt-2"><b>Ação:</b> Verifique sua conexão e as regras de segurança do Firestore.</p>
+      </div>
+
+      <!-- CONTEÚDO PRINCIPAL -->
+      <div id="content-wrapper" class="hidden">
+        <div class="relative">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Ex.: 'cid:j45', 'asma', 'criança', 'has:anexo', 'tema:gestante', 'diabete'"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full"
+            autocomplete="off"
+          />
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+
+          <!-- sugestões -->
+          <div id="suggestions" class="absolute left-0 right-0 mt-2 bg-white border rounded-xl shadow-lg p-2 hidden z-10">
+            <div id="chips" class="flex flex-wrap gap-2"></div>
+          </div>
         </div>
+
+        <div class="flex items-center gap-2 mt-3 text-sm text-gray-500">
+          <span class="font-medium">Dicas:</span>
+          <code class="bg-gray-100 px-2 py-1 rounded">cid:j45</code>
+          <code class="bg-gray-100 px-2 py-1 rounded">tema:gestante</code>
+          <code class="bg-gray-100 px-2 py-1 rounded">has:anexo</code>
+          <code class="bg-gray-100 px-2 py-1 rounded">"frase exata"</code>
+          <code class="bg-gray-100 px-2 py-1 rounded">!excluir</code>
+        </div>
+
+        <div id="search-results" class="mt-6 space-y-3"></div>
+        <p id="no-results" class="text-center text-gray-500 mt-8 hidden">Nenhum protocolo encontrado.</p>
+      </div>
     </div>
+  </div>
 
-    <!-- SCRIPT PRINCIPAL -->
-    <script>
-        // *** SUA CONFIGURAÇÃO DO FIREBASE ***
-        const firebaseConfig = {
-            apiKey: "AIzaSyBVoT23U4UfFqY9Q076q4g76K2NmcjS3jk",
-            authDomain: "protocolos-b2a13.firebaseapp.com",
-            projectId: "protocolos-b2a13",
-            storageBucket: "protocolos-b2a13.firebasestorage.app",
-            messagingSenderId: "999397114103",
-            appId: "1:999397114103:web:fb94ab5e65184795f3d3f2",
-            measurementId: "G-XEVSG8M6QZ"
-        };
-        
-        // *** INICIALIZAR O FIREBASE ***
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+  <!-- MODAL -->
+  <div id="protocol-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-60 items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 modal-content">
+      <div class="flex justify-between items-start">
+        <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+        <button id="close-protocol-modal" class="text-gray-400 hover:text-gray-600 text-3xl font-bold">&times;</button>
+      </div>
+      <div class="space-y-5 text-gray-700">
+        <div><h4 class="font-semibold border-b pb-2 mb-2">Resumo</h4><p id="modal-summary"></p></div>
+        <div><h4 class="font-semibold border-b pb-2 mb-2">Pontos Principais</h4><ul id="modal-main-points" class="list-disc list-inside space-y-1"></ul></div>
+        <div><h4 class="font-semibold border-b pb-2 mb-2">Fluxo do Protocolo</h4><ul id="modal-flow" class="list-decimal list-inside space-y-2"></ul></div>
+        <div><h4 class="font-semibold border-b pb-2 mb-2">Faixa Etária e Doenças/CIDs</h4>
+          <p><span class="font-medium">Idades:</span> <span id="modal-ages"></span></p>
+          <p><span class="font-medium">Doenças/CIDs:</span> <span id="modal-cids"></span></p>
+        </div>
+        <div><h4 class="font-semibold border-b pb-2 mb-2">Anexos</h4><div id="modal-attachments" class="space-y-2"></div></div>
+      </div>
+    </div>
+  </div>
 
-        let fuse; // Variável global para o Fuse.js
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
+    // ===== FIREBASE (mantido) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBVoT23U4UfFqY9Q076q4g76K2NmcjS3jk",
+      authDomain: "protocolos-b2a13.firebaseapp.com",
+      projectId: "protocolos-b2a13",
+      storageBucket: "protocolos-b2a13.firebasestorage.app",
+      messagingSenderId: "999397114103",
+      appId: "1:999397114103:web:fb94ab5e65184795f3d3f2",
+      measurementId: "G-XEVSG8M6QZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        // *** MAPEAMENTO DOS ELEMENTOS DA UI ***
-        const ui = {
-            loadingState: document.getElementById('loading-state'),
-            errorState: document.getElementById('error-state'),
-            errorMessage: document.getElementById('error-message'),
-            contentWrapper: document.getElementById('content-wrapper'),
-            searchInput: document.getElementById('search-input'),
-            searchResults: document.getElementById('search-results'),
-            noResults: document.getElementById('no-results'),
-            protocolModal: document.getElementById('protocol-modal'),
-            modalTitle: document.getElementById('modal-title'),
-            modalSummary: document.getElementById('modal-summary'),
-            modalMainPoints: document.getElementById('modal-main-points'),
-            modalFlow: document.getElementById('modal-flow'),
-            modalAges: document.getElementById('modal-ages'),
-            modalCids: document.getElementById('modal-cids'),
-            modalAttachments: document.getElementById('modal-attachments'),
-            closeProtocolModalBtn: document.getElementById('close-protocol-modal'),
-        };
+    let fuse; // índice Fuse
+    let allProtocols = []; // base original
+    let normalizedIndex = []; // base normalizada
+    let lastQuery = ""; // p/ highlight
+    let debounceTimer = null;
 
-        /**
-         * Carrega os dados diretamente do Firestore
-         */
-        async function loadDataFromFirestore() {
-            // Garante que os elementos da UI principal existem antes de tentar usá-los
-            if (!ui.loadingState || !ui.errorState || !ui.contentWrapper) {
-                console.error("Elementos principais da UI (loading, error, content) não encontrados. Este script deve rodar no index.html.");
-                return;
-            }
+    // ===== UI =====
+    const ui = {
+      loadingState: document.getElementById('loading-state'),
+      errorState: document.getElementById('error-state'),
+      errorMessage: document.getElementById('error-message'),
+      contentWrapper: document.getElementById('content-wrapper'),
+      searchInput: document.getElementById('search-input'),
+      searchResults: document.getElementById('search-results'),
+      noResults: document.getElementById('no-results'),
+      protocolModal: document.getElementById('protocol-modal'),
+      modalTitle: document.getElementById('modal-title'),
+      modalSummary: document.getElementById('modal-summary'),
+      modalMainPoints: document.getElementById('modal-main-points'),
+      modalFlow: document.getElementById('modal-flow'),
+      modalAges: document.getElementById('modal-ages'),
+      modalCids: document.getElementById('modal-cids'),
+      modalAttachments: document.getElementById('modal-attachments'),
+      closeProtocolModalBtn: document.getElementById('close-protocol-modal'),
+      suggestions: document.getElementById('suggestions'),
+      chips: document.getElementById('chips')
+    };
 
-            ui.loadingState.classList.remove('hidden');
-            ui.errorState.classList.add('hidden');
-            ui.contentWrapper.classList.add('hidden');
-            
-            try {
-                // Buscar da coleção 'protocolos'
-                const snapshot = await db.collection('protocolos').get();
+    // ===== Utilitários =====
+    const norm = (s) => (s || "")
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
 
-                if (snapshot.empty) {
-                    throw new Error('Nenhum protocolo encontrado no Firestore. Verifique a coleção "protocolos".');
-                }
+    const SYNONYMS = {
+      "has": ["hipertensao arterial sistemica","hipertensao","pressao alta"],
+      "diabetes": ["dm","glicemia","diabete","hiperglicemia"],
+      "asma": ["sibilo","chiado","broncospasmo","crise asmatica"],
+      "gestante": ["gravida","pre-natal","prenatal"],
+      "idoso": ["terceira idade","longevidade"],
+      "crianca": ["pediatria","pediatrico"],
+      "tb": ["tuberculose"],
+      "ist": ["dst","sexualmente transmissivel"]
+    };
 
-                // Mapeia os documentos para o formato que o app espera
-                const databaseDeProtocolos = snapshot.docs.map(doc => doc.data());
+    const extractCIDs = (s) => {
+      const txt = norm(s);
+      const re = /\b([a-z]\d{2})(?:\.?\d)?\b/gi; // j45, j45.0, a09
+      const out = new Set();
+      let m;
+      while ((m = re.exec(txt.replace(/\s/g,''))) !== null) out.add(m[1].toUpperCase());
+      return Array.from(out);
+    };
 
-                // Configura o Fuse.js para a busca
-                const options = { keys: ['nome', 'tema', 'resumo', 'cids', 'doencas'], threshold: 0.3 };
-                fuse = new Fuse(databaseDeProtocolos, options);
-                
-                // Exibe todos os resultados inicialmente
-                displayResults(databaseDeProtocolos.map(p => ({ item: p })));
-                
-                ui.loadingState.classList.add('hidden');
-                ui.contentWrapper.classList.remove('hidden');
+    // *** FIX: construir keywords sem reatribuir const ***
+    const makeKeywords = (p) => {
+      const tokens = [p.nome, p.tema, p.resumo, p.doencas, p.cids, p.principais, p.fluxo, p.idades, p.anexos]
+        .map(x => norm(x)).join(' ').split(/\s+/).filter(Boolean);
 
-            } catch (error) {
-                console.error("ERRO GRAVE ao carregar do Firestore:", error);
-                ui.errorMessage.textContent = `Erro no Firestore: ${error.message}`;
-                ui.loadingState.classList.add('hidden');
-                ui.errorState.classList.remove('hidden');
-            }
+      // acrescenta sinônimos se o termo base estiver presente
+      Object.entries(SYNONYMS).forEach(([base, list]) => {
+        if (tokens.join(' ').includes(base)) list.forEach(syn => tokens.push(syn));
+      });
+
+      // CIDs sem ponto
+      const cidsNoDot = (p.cids || '').split(';').map(c => c.trim().replace('.','')).filter(Boolean);
+      cidsNoDot.forEach(c => tokens.push(c));
+
+      return tokens.join(' ');
+    };
+
+    // Mini-DSL → expressão extended do Fuse
+    const buildFuseQuery = (raw) => {
+      const q = raw.trim();
+      if (!q) return null;
+
+      const tokens = [];
+      q.replace(/"([^"]+)"|(\S+)/g, (_, quoted, bare) => { tokens.push(quoted ? `"${quoted}"` : bare); });
+
+      const clauses = [];
+      for (const tk of tokens) {
+        if (tk.startsWith('!')) { // negação
+          const term = norm(tk.slice(1));
+          clauses.push({ $and: [{ $path: 'keywords', $not: term }] });
+          continue;
         }
-        
-        /**
-         * Realiza a busca com Fuse.js
-         */
-        const performSearch = () => {
-             if (!fuse) return;
-            const query = ui.searchInput.value.trim();
-            const results = query ? fuse.search(query) : fuse.getIndex().docs.map(p => ({ item: p }));
-            displayResults(results);
-        };
-        
-        /**
-         * Exibe os resultados da busca no HTML
-         */
-        const displayResults = (results) => {
-            if (!ui.searchResults || !ui.noResults) return; // Verificação de segurança
-
-            ui.searchResults.innerHTML = '';
-            ui.noResults.classList.toggle('hidden', results.length > 0);
-            
-            results.forEach(result => {
-                const protocol = result.item;
-                const el = document.createElement('div');
-                el.className = 'p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors';
-                el.innerHTML = `<h3 class="font-semibold text-blue-700">${protocol.nome}</h3><p class="text-sm text-gray-600 mt-1">${(protocol.resumo || '').substring(0, 120)}...</p>`;
-                el.addEventListener('click', () => showProtocolDetails(protocol));
-                ui.searchResults.appendChild(el);
-            });
-        };
-        
-        /**
-         * Preenche e exibe o modal com os detalhes do protocolo
-         */
-        const showProtocolDetails = (protocol) => {
-            ui.modalTitle.textContent = protocol.nome || 'S/ Título';
-            ui.modalSummary.textContent = protocol.resumo || 'N/A';
-            ui.modalAges.textContent = protocol.idades || 'N/A';
-            
-            const cidsList = protocol.cids ? protocol.cids.split(';').map(c => c.trim()) : [];
-            const doencasList = protocol.doencas ? protocol.doencas.split(';').map(d => d.trim()) : [];
-            ui.modalCids.innerHTML = cidsList.map((cid, index) => `<b>${doencasList[index] || ''}</b> (${cid})`).join(', ') || 'N/A';
-            
-            const createList = (text) => text ? text.split(';').map(item => `<li>${item.trim()}</li>`).join('') : '<li>Nenhum item.</li>';
-            ui.modalMainPoints.innerHTML = createList(protocol.principais);
-            ui.modalFlow.innerHTML = createList(protocol.fluxo);
-            
-            ui.modalAttachments.innerHTML = '';
-            if (protocol.anexos) {
-                 protocol.anexos.split(';').forEach(anexoStr => {
-                       const parts = anexoStr.split('|');
-                       if(parts.length === 2 && parts[0].trim() && parts[1].trim()) {
-                            const [nome, url] = parts;
-                            const link = document.createElement('a');
-                            link.href = url.trim();
-                            link.target = '_blank';
-                            link.className = 'flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 p-2 rounded-md transition-colors';
-                            link.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span>${nome.trim()}</span>`;
-                            ui.modalAttachments.appendChild(link);
-                       }
-                 });
-             }
-             if (!ui.modalAttachments.hasChildNodes()) {
-                 ui.modalAttachments.innerHTML = '<p class="text-gray-500">Nenhum anexo disponível.</p>';
-             }
-            openModal(ui.protocolModal);
-        };
-
-        const openModal = (modal) => modal.classList.add('is-open', 'modal-enter');
-        const closeModal = (modal) => {
-            modal.classList.add('modal-leave');
-            setTimeout(() => modal.classList.remove('is-open', 'modal-leave'), 300);
-        };
-
-        // --- EVENT LISTENERS (com verificações de segurança) ---
-
-        // 'search-input' SÓ EXISTE NESTA PÁGINA, então a verificação é boa
-        if (ui.searchInput) {
-            ui.searchInput.addEventListener('input', performSearch);
+        if (tk.startsWith('"') && tk.endsWith('"')) { // frase exata
+          const term = norm(tk.slice(1, -1));
+          clauses.push({ $or: [
+            { $path: 'nome', $val: `="${term}"` },
+            { $path: 'tema', $val: `="${term}"` },
+            { $path: 'resumo', $val: `="${term}"` },
+            { $path: 'doencas', $val: `="${term}"` },
+            { $path: 'fluxo', $val: `="${term}"` },
+            { $path: 'keywords', $val: `="${term}"` }
+          ]});
+          continue;
         }
-
-        // 'close-protocol-modal' SÓ EXISTE NESTA PÁGINA
-        if (ui.closeProtocolModalBtn) {
-            ui.closeProtocolModalBtn.addEventListener('click', () => closeModal(ui.protocolModal));
+        const m = tk.match(/^([a-z]+):(.*)$/i);
+        if (m) {
+          const field = m[1].toLowerCase();
+          let value = norm(m[2] || "");
+          if (field === 'cid') {
+            value = value.replace('.','').toUpperCase();
+            clauses.push({ $or: [
+              { $path: 'cidsRaw', $val: `^"${value}"` }, // prefixo
+              { $path: 'keywords', $val: value.toLowerCase() }
+            ]});
+          } else if (field === 'has' && value === 'anexo') {
+            clauses.push({ $path: 'hasAnexoStr', $val: '=true' });
+          } else if (['tema','nome','resumo','doenca','doencas','fluxo','idades'].includes(field)) {
+            const mapped = field === 'doenca' ? 'doencas' : field;
+            clauses.push({ $path: mapped, $val: value });
+          } else {
+            clauses.push({ $path: 'keywords', $val: value });
+          }
+          continue;
         }
+        // termo livre
+        clauses.push({ $path: 'keywords', $val: norm(tk) });
+      }
+      return clauses.length ? { $and: clauses } : null;
+    };
 
-        // Lógica do Menu (pode ser copiada para outras páginas)
-        const menuButton = document.getElementById('menu-button');
-        const menuDropdown = document.getElementById('menu-dropdown');
+    // Highlight acento-insensitive: calcula offsets em texto normalizado e aplica no original
+    const highlight = (original, rawQuery) => {
+      if (!rawQuery) return original || '';
+      const normOriginal = norm(original || '');
+      const terms = [];
+      rawQuery.replace(/"([^"]+)"|(\S+)/g, (_, quoted, bare) => {
+        let t = norm(quoted || bare || '');
+        if (!t || t.startsWith('!') || t.includes(':')) return;
+        terms.push(t);
+      });
+      if (!terms.length) return original || '';
 
-        if (menuButton && menuDropdown) { // Verifica se os elementos do menu existem
-            menuButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                menuDropdown.classList.toggle('hidden');
-            });
+      // encontra ranges
+      const ranges = [];
+      terms.forEach(term => {
+        let start = 0, idx;
+        while ((idx = normOriginal.indexOf(term, start)) !== -1) {
+          ranges.push([idx, idx + term.length]);
+          start = idx + term.length;
         }
+      });
+      if (!ranges.length) return original || '';
 
-        // Fecha o menu se clicar fora
-        window.addEventListener('click', (e) => {
-            if (menuButton && menuDropdown && !menuButton.contains(e.target)) {
-                menuDropdown.classList.add('hidden');
-            }
+      // mescla ranges sobrepostos
+      ranges.sort((a,b)=>a[0]-b[0]);
+      const merged = [];
+      for (const r of ranges) {
+        if (!merged.length || r[0] > merged[merged.length-1][1]) merged.push(r);
+        else merged[merged.length-1][1] = Math.max(merged[merged.length-1][1], r[1]);
+      }
+
+      // reconstrói HTML usando offsets no original
+      let html = '';
+      let pos = 0;
+      for (const [s,e] of merged) {
+        html += (original || '').slice(pos, s);
+        html += '<mark>' + (original || '').slice(s, e) + '</mark>';
+        pos = e;
+      }
+      html += (original || '').slice(pos);
+      return html;
+    };
+
+    const renderChips = (query) => {
+      const q = norm(query);
+      if (!q) { ui.suggestions.classList.add('hidden'); ui.chips.innerHTML=''; return; }
+
+      const cidSet = new Set();
+      const temaCount = new Map();
+      const doencaCount = new Map();
+
+      normalizedIndex.forEach(p => {
+        (p.cidsRaw || []).forEach(c=>cidSet.add(c));
+        if (p.tema) {
+          temaCount.set(p.tema, (temaCount.get(p.tema)||0)+1);
+        }
+        (p.doencas||'').split(';').map(x=>norm(x.trim())).filter(Boolean).forEach(d=>{
+          doencaCount.set(d, (doencaCount.get(d)||0)+1);
+        });
+      });
+
+      const cidMatches = Array.from(cidSet).filter(c => norm(c).includes(q.replace('cid:',''))).slice(0,5);
+      const temaMatches = Array.from(temaCount.keys()).filter(t => t.includes(q)).slice(0,3);
+      const doencaMatches = Array.from(doencaCount.keys()).filter(d => d.includes(q)).slice(0,3);
+
+      const chips = [];
+      cidMatches.forEach(c => chips.push({label:`CID ${c}`, value:`cid:${c}`}));
+      temaMatches.forEach(t => chips.push({label:`tema:${t}`, value:`tema:${t}`}));
+      doencaMatches.forEach(d => chips.push({label:`doenca:${d}`, value:`doenca:${d}`}));
+
+      ui.chips.innerHTML = '';
+      if (!chips.length) { ui.suggestions.classList.add('hidden'); return; }
+
+      chips.forEach(ch => {
+        const b = document.createElement('button');
+        b.className = 'px-3 py-1 text-sm bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full';
+        b.textContent = ch.label;
+        b.addEventListener('click', () => {
+          ui.searchInput.value = ch.value;
+          performSearch();
+          ui.suggestions.classList.add('hidden');
+        });
+        ui.chips.appendChild(b);
+      });
+      ui.suggestions.classList.remove('hidden');
+    };
+
+    // ===== Firestore =====
+    async function loadDataFromFirestore() {
+      ui.loadingState.classList.remove('hidden');
+      ui.errorState.classList.add('hidden');
+      ui.contentWrapper.classList.add('hidden');
+
+      try {
+        const snapshot = await db.collection('protocolos').get();
+        if (snapshot.empty) throw new Error('Nenhum protocolo encontrado na coleção "protocolos".');
+
+        allProtocols = snapshot.docs.map(doc => doc.data());
+
+        normalizedIndex = allProtocols.map(p => {
+          const cidsRaw = (p.cids || '')
+            .split(';')
+            .map(x => x.trim().toUpperCase().replace('.',''))
+            .filter(Boolean);
+
+          return {
+            ...p,
+            nome: norm(p.nome),
+            tema: norm(p.tema),
+            resumo: norm(p.resumo),
+            doencas: norm(p.doencas),
+            fluxo: norm(p.fluxo),
+            idades: norm(p.idades),
+            keywords: makeKeywords(p),
+            cidsRaw,
+            hasAnexoStr: String(!!(p.anexos && p.anexos.trim())) // 'true'/'false' para extended search
+          };
         });
 
-        // *** INICIALIZA O CARREGAMENTO DOS DADOS ***
-        loadDataFromFirestore();
+        fuse = new Fuse(normalizedIndex, {
+          includeScore: true,
+          useExtendedSearch: true,
+          shouldSort: true,
+          threshold: 0.3,
+          ignoreLocation: true,
+          minMatchCharLength: 2,
+          keys: [
+            { name: 'nome', weight: 0.35 },
+            { name: 'cidsRaw', weight: 0.28 },
+            { name: 'doencas', weight: 0.22 },
+            { name: 'tema', weight: 0.20 },
+            { name: 'resumo', weight: 0.15 },
+            { name: 'fluxo', weight: 0.10 },
+            { name: 'keywords', weight: 0.30 },
+            { name: 'hasAnexoStr', weight: 0.05 }
+          ]
+        });
 
-    </script>
+        const initial = [...allProtocols]
+          .sort((a,b) => norm(a.nome).localeCompare(norm(b.nome)))
+          .map(p => ({ item: p, score: 1 }));
+
+        displayResults(initial);
+        ui.loadingState.classList.add('hidden');
+        ui.contentWrapper.classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Erro Firestore:', error);
+        ui.errorMessage.textContent = `Erro no Firestore: ${error.message}`;
+        ui.loadingState.classList.add('hidden');
+        ui.errorState.classList.remove('hidden');
+      }
+    }
+
+    // ===== Busca =====
+    const performSearch = () => {
+      if (!fuse) return;
+      const raw = ui.searchInput.value.trim();
+      lastQuery = raw;
+
+      let results = [];
+      if (!raw) {
+        results = allProtocols.map(p => ({ item: p, score: 1 }));
+      } else {
+        const extended = buildFuseQuery(raw);
+        if (extended) {
+          results = fuse.search(extended).map(r => ({ item: denormalize(r.item), score: r.score }));
+        } else {
+          results = fuse.search({ $path: 'keywords', $val: norm(raw) })
+                         .map(r => ({ item: denormalize(r.item), score: r.score }));
+        }
+      }
+      displayResults(results);
+      renderChips(raw);
+    };
+
+    const denormalize = (nItem) => {
+      const idx = allProtocols.findIndex(p => norm(p.nome) === nItem.nome && norm(p.resumo||'') === nItem.resumo);
+      return idx >= 0 ? allProtocols[idx] : nItem;
+    };
+
+    // ===== Render =====
+    const displayResults = (results) => {
+      ui.searchResults.innerHTML = '';
+      ui.noResults.classList.toggle('hidden', results.length > 0);
+      results.sort((a,b) => (a.score||1) - (b.score||1));
+
+      results.forEach(res => {
+        const p = res.item;
+        const card = document.createElement('div');
+        card.className = 'p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors';
+
+        const title = highlight(p.nome || 'Sem título', lastQuery);
+        const resumoTxt = p.resumo || '';
+        const snippet = highlight(resumoTxt.substring(0,160) + (resumoTxt.length>160?'…':''), lastQuery);
+        const badges = (p.cids || '')
+          .split(';').map(x=>x.trim()).filter(Boolean).slice(0,4)
+          .map(c=>`<span class="text-[11px] px-2 py-0.5 bg-gray-100 border rounded-full">${c}</span>`)
+          .join(' ');
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="font-semibold text-blue-700 leading-snug">${title}</h3>
+              <p class="text-sm text-gray-600 mt-1">${snippet}</p>
+              <div class="mt-2 flex flex-wrap gap-1">${badges}</div>
+            </div>
+            ${p.anexos ? '<span class="text-xs px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">Anexos</span>' : ''}
+          </div>
+        `;
+        card.addEventListener('click', () => showProtocolDetails(p));
+        ui.searchResults.appendChild(card);
+      });
+    };
+
+    // ===== Modal =====
+    const showProtocolDetails = (protocol) => {
+      ui.modalTitle.textContent = protocol.nome || 'S/ Título';
+      ui.modalSummary.textContent = protocol.resumo || 'N/A';
+      ui.modalAges.textContent = protocol.idades || 'N/A';
+
+      const cidsList = protocol.cids ? protocol.cids.split(';').map(c => c.trim()) : [];
+      const doencasList = protocol.doencas ? protocol.doencas.split(';').map(d => d.trim()) : [];
+      ui.modalCids.innerHTML = cidsList.map((cid, i) => `<b>${doencasList[i] || ''}</b> (${cid})`).join(', ') || 'N/A';
+
+      const createList = (text) => text ? text.split(';').map(item => `<li>${item.trim()}</li>`).join('') : '<li>Nenhum item.</li>';
+      ui.modalMainPoints.innerHTML = createList(protocol.principais);
+      ui.modalFlow.innerHTML = createList(protocol.fluxo);
+
+      ui.modalAttachments.innerHTML = '';
+      if (protocol.anexos) {
+        protocol.anexos.split(';').forEach(anexoStr => {
+          const parts = anexoStr.split('|');
+          if (parts.length === 2 && parts[0].trim() && parts[1].trim()) {
+            const [nome, url] = parts;
+            const link = document.createElement('a');
+            link.href = url.trim();
+            link.target = '_blank';
+            link.className = 'flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 p-2 rounded-md transition-colors';
+            link.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span>${nome.trim()}</span>`;
+            ui.modalAttachments.appendChild(link);
+          }
+        });
+      }
+      if (!ui.modalAttachments.hasChildNodes()) {
+        ui.modalAttachments.innerHTML = '<p class="text-gray-500">Nenhum anexo disponível.</p>';
+      }
+      openModal(ui.protocolModal);
+    };
+
+    const openModal = (modal) => modal.classList.add('is-open', 'modal-enter');
+    const closeModal = (modal) => {
+      modal.classList.add('modal-leave');
+      setTimeout(() => modal.classList.remove('is-open', 'modal-leave'), 300);
+    };
+
+    // ===== Eventos =====
+    if (ui.searchInput) {
+      ui.searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(performSearch, 220);
+        renderChips(ui.searchInput.value);
+      });
+      ui.searchInput.addEventListener('focus', () => renderChips(ui.searchInput.value));
+      ui.searchInput.addEventListener('blur', () => setTimeout(()=>ui.suggestions.classList.add('hidden'), 150));
+      ui.searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          ui.searchInput.value = '';
+          performSearch();
+          ui.suggestions.classList.add('hidden');
+        }
+      });
+    }
+    if (ui.closeProtocolModalBtn) ui.closeProtocolModalBtn.addEventListener('click', () => closeModal(ui.protocolModal));
+
+    const menuButton = document.getElementById('menu-button');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    if (menuButton && menuDropdown) {
+      menuButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        menuDropdown.classList.toggle('hidden');
+      });
+    }
+    window.addEventListener('click', (e) => {
+      if (menuButton && menuDropdown && !menuButton.contains(e.target)) menuDropdown.classList.add('hidden');
+    });
+
+    // ===== Inicializa =====
+    loadDataFromFirestore();
+  </script>
 </body>
 </html>
